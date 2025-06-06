@@ -24,14 +24,55 @@ dapat mencari kata kunci yang bersifat satu kata dan bukan frasa. Jika
 kata berhasil ditemukan, maka kata akan di highlight dan akan dihitung jumlah
 kata yang ditemukan.
 
-**CARA PENGGUNAAN**
-1. Export zip file ini ke folder yang diinginkan.
-2. Buka Powershell dan jalankan directory nya ke lokasi folder yang Anda extract
-3. Jalankan aplikasi dengan perintah "java -jar WordSearch-1.0-SNAPSHOT.jar"
-4. Tampilan UI seharusnya muncul dan user dapat mengunggah file .docx yang diinginkan
-5. Setelah file berhasil diunggah, user dapat memasukkan kata kunci yang ingin dicari
-6. Jika kata berhasil ditemukan, kata akan di highlight dan dihitung berapa kali munculnya
+# WordSearch Java Swing App
 
+Aplikasi desktop Java untuk mencari, menyorot, dan menavigasi kata pada dokumen PDF dan DOCX. Mendukung upload file, highlight, navigasi hasil, dan UI modern.
+
+## Cara Menjalankan di VS Code (Maven)
+
+### 1. Buka Folder Project di VS Code
+- Pilih menu **File > Open Folder...**
+- Arahkan ke folder project ini (`WordSearch`)
+
+### 2. Pastikan Sudah Install Java & Maven
+- Java JDK 11+ (cek: `java -version` di terminal)
+- Maven (cek: `mvn -version` di terminal)
+- Jika belum, install dari https://adoptium.net/ dan https://maven.apache.org/
+
+### 3. Build Project
+Buka terminal di VS Code (Ctrl+`), lalu jalankan:
+```powershell
+mvn clean package
+```
+- Ini akan meng-compile kode dan menghasilkan file JAR di folder `target/`
+
+### 4. Run Aplikasi dari Maven
+Masih di terminal, jalankan:
+```powershell
+mvn exec:java -Dexec.mainClass="com.eyin.wordsearch.App"
+```
+- Atau gunakan fitur **Run** di VS Code (ikon play di pojok atas editor pada file `App.java`)
+
+### 5. Alternatif: Run JAR Langsung
+Setelah build, bisa juga jalankan:
+```powershell
+java -jar target/WordSearch-1.0-SNAPSHOT.jar
+```
+
+## Fitur Utama
+- Upload file PDF/DOCX
+- Cari kata (case-insensitive, whole word)
+- Highlight & navigasi hasil (Next/Prev)
+- UI modern, responsif, dan mudah digunakan
+
+## Catatan
+- Semua dependensi (PDFBox, Apache POI) otomatis di-handle Maven.
+- Untuk development, **disarankan run via Maven** agar dependency selalu up-to-date.
+- Jika ada error, pastikan file yang diupload adalah PDF/DOCX dan Java/Maven sudah terinstall.
+
+---
+
+**Selamat mencoba!**
 
 - Jurusan Teknik Informatika
 - Fakultas Teknologi Informasi
