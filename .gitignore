@@ -42,3 +42,6 @@ target/
 # Gradle
 .gradle/
 build/
+
+#dependencyreducedpomxml
+.dependencyreducedpomxml
