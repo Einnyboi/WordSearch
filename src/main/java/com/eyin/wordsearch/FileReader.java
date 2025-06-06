@@ -1,48 +1,45 @@
 package com.eyin.wordsearch;
 
 import java.io.File;
-import java.io.FileInputStream;
-
-//menggunakan apache POI yaitu library untuk membaca file Microsoft Office
-//dari maven repository
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
-//class untuk membaca file .docx dan membangun Trie
+// class untuk membaca file .pdf dan membangun Trie
 public class FileReader {
-    //method
+    // method
     public static String readAndBuildTrie(File file, Trie trie) throws Exception {
-        //deklarasi technical variables
-        //FileInputStream digunakan untuk membaca file .docx
-        //karena hanya fis saja tidak bisa langsung diakses isi dokumen
-        //XWPFDocument digunakan untuk mengakses dokumen .docx
-        //XWPFParagraph digunakan untuk mengakses setiap paragraf dalam dokumen
-        //StringBuilder digunakan untuk menyimpan isi dokumen
-        FileInputStream fis = new FileInputStream(file);
-        XWPFDocument document = new XWPFDocument(fis);
-        StringBuilder content = new StringBuilder();
-        
-        //Iterasi setiap paragraf dalam dokumen
-        for (XWPFParagraph paragraph : document.getParagraphs()) {
-            //melakukan append untuk menambahkan teks paragraf ke StringBuilder
-            //dan juga membangun Trie dengan memasukkan setiap kata dalam paragraf
-            content.append(paragraph.getText()).append("\n\n"); 
-            String[] words = paragraph.getText().toLowerCase().split("\\W+"); // \\W+ untuk memisahkan kata berdasarkan non-word characters (spasi, tanda baca, dll)
+        String fileName = file.getName().toLowerCase();
+        String text = "";
 
-            //memasukkan setiap kata ke dalam Trie
-            for (String word : words) {
-                //jika kata tidak kosong atau hanya spasi
-                //maka masukkan ke dalam Trie
-                if (!word.isEmpty()) {
-                    trie.insert(word);
-                }
+        // cek apakah file yang diunggah adalah .pdf atau .docx
+        //jika pdf, gunakan PDFBox untuk membaca
+        if (fileName.endsWith(".pdf")) {
+            PDDocument document = PDDocument.load(file);
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setAddMoreFormatting(true); //untuk menjaga format teks
+            stripper.setSortByPosition(true); //untuk menjaga urutan teks
+            text = stripper.getText(document); // membaca teks dari dokumen PDF
+            document.close();
+        } else if (fileName.endsWith(".docx")) { //jika docx, gunakan Apache POI untuk membaca
+            XWPFDocument document = new XWPFDocument(new java.io.FileInputStream(file));
+            StringBuilder content = new StringBuilder();
+            for (XWPFParagraph paragraph : document.getParagraphs()) {
+                content.append(paragraph.getText()).append("\n\n");
+            }
+            text = content.toString();
+            document.close();
+        } else {
+            throw new IllegalArgumentException("File tidak didukung, mohon coba ulang dan gunakan file .pdf atau .docx");
+        }
+        // Iterasi setiap kata dalam dokumen
+        String[] words = text.toLowerCase().split("[^\\p{L}\\p{N}]+");
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                trie.insert(word);
             }
         }
-
-        //menutup dokumen
-        document.close();
-        fis.close();
-        //mengembalikan isi dokumen sebagai String
-        return content.toString();
+        return text;
     }
-}
+}//end of FileReader class

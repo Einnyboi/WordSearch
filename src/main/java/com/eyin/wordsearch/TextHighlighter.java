@@ -2,7 +2,10 @@ package com.eyin.wordsearch;
 
 import javax.swing.JTextPane;
 import javax.swing.text.StyledDocument;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.List;
+import java.util.ArrayList;
 // Class untuk meng-highlight kata yang dicari dan menghitung jumlah ketika ditemukan
 // proses ini dilakukan dengan mencari kata yang muncul dalam JTextPane
 // dan mengubah gaya teksnya menjadi highlight
@@ -13,49 +16,59 @@ public class TextHighlighter {
     //documentArea adalah JTextPane yang berisi teks yang akan di-highlight
     //word adalah kata kunci yang dicari
     public static void highlightWord(JTextPane documentArea, String word) {
-        try {
-            //deklarasi doc sebagai StyledDocument yang dapat diatur gaya nya
-            StyledDocument doc = documentArea.getStyledDocument();
-            // membersihkan highlight sebelumnya
-            doc.setCharacterAttributes(0, doc.getLength(), documentArea.getStyle("default"), true); // Clear previous highlights
-            
-            // mencari kata dalam dokumen
-            String text = documentArea.getText();
-            // index menyimpan posisi awal dari kata yang ditemukan dalam dokumen
-            // toLowerCase memastikan dokumen dan kata yang dicari huruf kecil
-            // sehingga pencarian tidak case-sensitive
-            int index = text.toLowerCase().indexOf(word.toLowerCase());
+    try {
+        StyledDocument doc = documentArea.getStyledDocument();
+        doc.setCharacterAttributes(0, doc.getLength(), documentArea.getStyle("default"), true); // Clear previous highlights
 
-            // loop untuk menelusuri semua kemunculan kata dalam dokumen
-            while (index >= 0) {
-                //setCharacterAttributes digunakan untuk mengubah gaya teks
-                doc.setCharacterAttributes(index, word.length(), documentArea.getStyle("highlight"), false);
-                // mencari kemunculan berikutnya dari kata yang sama
-                index = text.toLowerCase().indexOf(word.toLowerCase(), index + word.length());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        String text = doc.getText(0, doc.getLength()); // Retrieves clean raw text without hidden formatting
+
+        String patternStr = "(?i)\\b" + java.util.regex.Pattern.quote(word) + "\\b"; // Ensure word boundary matching
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(patternStr);
+        java.util.regex.Matcher matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            doc.setCharacterAttributes(matcher.start(), matcher.end() - matcher.start(), documentArea.getStyle("highlight"), false);
         }
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
+
 
     //method untuk menghitung jumlah kemunculan kata dalam dokumen
     public static int countWordOccurrences(JTextPane documentArea, String word) {
-        //dokumen dan kata yang dicari toLowerCase menjadi huruf kecil
-        String text = documentArea.getText().toLowerCase();
-        String search = word.toLowerCase();
-
-        //deklarasi count dan index dari kemunculan kata yang dicari
+        String text = documentArea.getText();
+        String patternStr = "(?i)(?<=^|[^\\p{L}\\p{N}])" + java.util.regex.Pattern.quote(word) + "(?=[^\\p{L}\\p{N}]|$)";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(patternStr);
+        java.util.regex.Matcher matcher = pattern.matcher(text);
         int count = 0;
-        int index = text.indexOf(search);
-
-        //loop untuk menelusuri semua kemunculan kata dalam dokumen
-        while (index >= 0) {
-            //count akan bertambah setiap kali kata ditemukan
+        while (matcher.find()) {
             count++;
-            //mencari kemunculan berikutnya dari kata yang sama
-            index = text.indexOf(search, index + search.length());
         }
-        //mengembalikan jumlah kemunculan kata dalam dokumen
         return count;
+    }
+    // text adalah dokumen
+    // word adalah kata kunci yang dicari
+    // method untuk menemukan semua kemunculan kata dalam teks
+    public static List<int[]> findAllMatches(String text, String word) {
+        
+        //arraylist untuk menyimpan posisi awal dan akhir dari setiap kemunculan kata
+        List<int[]> matches = new ArrayList<>();
+        if (word == null || word.isEmpty()) return matches;
+        //regex untuk mencari kata yang sesuai dengan kata kunci berdasarkan pattern
+        Pattern pattern = Pattern.compile(
+            // \\b adalah word boundary supaya hanya cocok dengan kata yg sebenarnya
+            // Pattern.quote untuk memastikan kata kunci diperlakukan sebagai literal
+            // contoh: jika kata kunci adalah "test", maka regex akan menjadi "\\btest\\b"
+            "\\b" + Pattern.quote(word) + "\\b",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+        );
+        // Matcher untuk mencari semua kemunculan kata dalam teks
+        // matcher.find() akan mengembalikan true jika ada kemunculan kata
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            matches.add(new int[] { matcher.start(), matcher.end() });
+        }
+        return matches;
     }
 }//end of class TextHighlighter
